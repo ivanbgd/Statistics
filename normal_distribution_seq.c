@@ -19,9 +19,9 @@
 
 /* Normal (Gaussian) distribution - by its definition */
 /* This doesn't work correctly! */
-void normal_by_definition(const double mean, const double std, double *arr, const unsigned size) {
+void normal_by_definition(const double mean, const double std, double *arr, const unsigned length) {
     const double two_pi = 8.0 * atan(1.0);
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < length; i++) {
         double x = rand() * 1. / RAND_MAX;
         double y = (1. / (std * sqrt(two_pi))) * (exp(-(x - mean)*(x - mean) / (2. * std*std)));
         arr[i] = y * std + mean;
@@ -31,9 +31,9 @@ void normal_by_definition(const double mean, const double std, double *arr, cons
 /* Normal (Gaussian) distribution - by the Central Limit Theorem */
 /* Lowest quality, plus too slow. An order of magnitude slower
 /* than the rest of the implementations. Correct, though. */
-void normal_clt(const double mean, const double std, double *arr, const unsigned size) {
+void normal_clt(const double mean, const double std, double *arr, const unsigned length) {
     const unsigned n_sum = 25;
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < length; i++) {
         double s = 0;
         for (size_t j = 0; j < n_sum; j++) {
             s += (double)rand() / RAND_MAX;
@@ -44,12 +44,12 @@ void normal_clt(const double mean, const double std, double *arr, const unsigned
     }
 }
 
-/* Normal (Gaussian) distribution - Box–Muller transform */
-void normal_box_muller_slow(const double mean, const double std, double *arr, const unsigned size) {
+/* Normal (Gaussian) distribution - Boxâ€“Muller transform */
+void normal_box_muller_slow(const double mean, const double std, double *arr, const unsigned length) {
     const double two_pi = 8.0 * atan(1.0);
     double x1;
     double x2;
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < length; i++) {
         double y;
         if (i % 2 == 0) {
             x1 = (rand() + 1.) / (RAND_MAX + 2.);
@@ -63,14 +63,14 @@ void normal_box_muller_slow(const double mean, const double std, double *arr, co
     }
 }
 
-/* Normal (Gaussian) distribution - Box–Muller transform */
+/* Normal (Gaussian) distribution - Boxâ€“Muller transform */
 /* Doesn't use IFs, but it's not (much) faster. This shows that
  * modern CPUs have good branch predictors. Tested on Intel. */
-void normal_box_muller_fast(const double mean, const double std, double *arr, const unsigned size) {
+void normal_box_muller_fast(const double mean, const double std, double *arr, const unsigned length) {
     const double two_pi = 8.0 * atan(1.0);
     double x1;
     double x2;
-    for (size_t i = 0; i < size; i += 2) {
+    for (size_t i = 0; i < length; i += 2) {
         double y1;
         double y2;
         x1 = (rand() + 1.) / (RAND_MAX + 2.);
@@ -83,10 +83,10 @@ void normal_box_muller_fast(const double mean, const double std, double *arr, co
 }
 
 /* Normal (Gaussian) distribution - Marsaglia polar method */
-void normal_marsaglia(const double mean, const double std, double *arr, const unsigned size) {
+void normal_marsaglia(const double mean, const double std, double *arr, const unsigned length) {
     double x1;
     double x2;
-    for (size_t i = 0; i < size; i += 2) {
+    for (size_t i = 0; i < length; i += 2) {
         double s, y1, y2, f;
         do {
             x1 = 2.0 * rand() / (double)RAND_MAX - 1.0;
@@ -105,29 +105,29 @@ void normal_marsaglia(const double mean, const double std, double *arr, const un
 /*** AUXILIARY FUNCTIONS ***/
 
 /* Returns the mean value of an array */
-double mean(const double *arr, const unsigned size) {
+double mean(const double *arr, const unsigned length) {
     double sum = 0.;
 
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < length; i++) {
         sum += arr[i];
     }    
-    return sum / size;
+    return sum / length;
 }
 
 /* Returns the standard deviation value of an array */
-double std_dev(const double *arr, const unsigned size) {
-    double avg = mean(arr, size);
+double std_dev(const double *arr, const unsigned length) {
+    double avg = mean(arr, length);
     double sum = 0.;
 
-    for (size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < length; i++) {
         sum += (arr[i] - avg) * (arr[i] - avg);
     }
-    return sqrt(sum / (size - 1));
+    return sqrt(sum / (length - 1));
 }
 
 /* Prints the first num_to_print elements of an array */
-void print_array(double *arr, const unsigned size, const unsigned num_to_print) {
-    if (num_to_print > size) {
+void print_array(double *arr, const unsigned length, const unsigned num_to_print) {
+    if (num_to_print > length) {
         printf("num_to_print has to be <= size!\n");
         system("pause");
         exit(-1);
@@ -141,22 +141,22 @@ void print_array(double *arr, const unsigned size, const unsigned num_to_print) 
 
 /* Generates samples in the array 'arr', by using the function 'fp', and prints the first num_to_print samples. */
 void generate_and_print(const char *function_name, void(*fp)(const double, const double, double*, const unsigned), \
-    const double mean_, const double std, double *arr, const unsigned size, const unsigned num_to_print) {
+    const double mean_, const double std, double *arr, const unsigned length, const unsigned num_to_print) {
 
-    fp(mean_, std, arr, size);
+    fp(mean_, std, arr, length);
 
     printf("\n%s:\n", function_name);
     printf("The first %u elements:\n", num_to_print);
-    print_array(arr, size, num_to_print);
+    print_array(arr, length, num_to_print);
 
-    double avg = mean(arr, size);
-    double stddev = std_dev(arr, size);
+    double avg = mean(arr, length);
+    double stddev = std_dev(arr, length);
     printf("Mean: %f; Standard deviation: %f\n", avg, stddev);
     printf("\tAbsolute error for mean: %f; Absolute error for standard deviation: %f\n", fabs(avg - mean_), fabs(stddev - std));
 }
 
 void measure_time(const char *function_name, void(*fp)(const double, const double, double*, const unsigned),\
-    const double mean, const double std, double *arr, const unsigned size, const unsigned num_loops) {
+    const double mean, const double std, double *arr, const unsigned length, const unsigned num_loops) {
     
     /* For measuring time */
     clock_t t0, t1;
@@ -165,7 +165,7 @@ void measure_time(const char *function_name, void(*fp)(const double, const doubl
     t0 = clock();
 
     for (size_t i = 0; i < num_loops; ++i) {
-        fp(mean, std, arr, size);
+        fp(mean, std, arr, length);
     }
 
     t1 = clock();
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
     srand((unsigned)time(&t));
 
     /* Array that holds the generated samples */
-    const unsigned num_samples = NUM_SAMPLES*10;
+    const unsigned num_samples = NUM_SAMPLES;
     double *samples = malloc(num_samples * sizeof(*samples));
 
     /* Function pointer to distribution functions */
