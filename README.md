@@ -1,2 +1,2 @@
 # Statistics
-Statistics algorithms
+Statistics algorithms, sequential and parallel implementations
