@@ -68,11 +68,8 @@ void normal_box_muller_slow(const double mean, const double std, double *arr, co
  * modern CPUs have good branch predictors. Tested on Intel. */
 void normal_box_muller_fast(const double mean, const double std, double *arr, const unsigned length) {
     const double two_pi = 8.0 * atan(1.0);
-    double x1;
-    double x2;
     for (size_t i = 0; i < length; i += 2) {
-        double y1;
-        double y2;
+        double x1, x2, y1, y2;
         x1 = (rand() + 1.) / (RAND_MAX + 2.);
         x2 = rand() / (RAND_MAX + 1.);
         y1 = sqrt(-2.0 * log(x1)) * sin(two_pi * x2);
@@ -84,10 +81,8 @@ void normal_box_muller_fast(const double mean, const double std, double *arr, co
 
 /* Normal (Gaussian) distribution - Marsaglia polar method */
 void normal_marsaglia(const double mean, const double std, double *arr, const unsigned length) {
-    double x1;
-    double x2;
     for (size_t i = 0; i < length; i += 2) {
-        double s, y1, y2, f;
+        double x1, x2, s, y1, y2, f;
         do {
             x1 = 2.0 * rand() / (double)RAND_MAX - 1.0;
             x2 = 2.0 * rand() / (double)RAND_MAX - 1.0;
@@ -143,7 +138,7 @@ void print_array(double *arr, const unsigned length, const unsigned num_to_print
 void generate_and_print(const char *function_name, void(*fp)(const double, const double, double*, const unsigned), \
     const double mean_, const double std, double *arr, const unsigned length, const unsigned num_to_print) {
 
-    fp(mean_, std, arr, length);
+    (*fp)(mean_, std, arr, length);
 
     printf("\n%s:\n", function_name);
     printf("The first %u elements:\n", num_to_print);
@@ -165,7 +160,7 @@ void measure_time(const char *function_name, void(*fp)(const double, const doubl
     t0 = clock();
 
     for (size_t i = 0; i < num_loops; ++i) {
-        fp(mean, std, arr, length);
+        (*fp)(mean, std, arr, length);
     }
 
     t1 = clock();
@@ -177,6 +172,7 @@ int main(int argc, char *argv[]) {
     /* Intializes random number generator */
     time_t t;
     srand((unsigned)time(&t));
+    //srand(0);
 
     /* Array that holds the generated samples */
     const unsigned num_samples = NUM_SAMPLES;
